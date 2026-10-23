@@ -322,7 +322,8 @@ function dstat(){
  const lx=+localStorage.getItem(LX)||0;
  ds.textContent=(ok?'✔ माहिती आपोआप या फोनमध्ये जतन होते'+(t?' ('+t+')':''):'⚠ ब्राउझर स्टोरेज बंद आहे, माहिती जतन होत नाही!')
   +'\nशेवटचा बॅकअप: '+(lx?new Date(lx).toLocaleDateString('en-GB'):'अजून नाही')
-  +'\nआठवड्यातून एकदा बॅकअप जतन करा.';
+  +'\nआठवड्यातून एकदा बॅकअप जतन करा.'
+  +'\nॲप आवृत्ती: v3';
  ds.style.whiteSpace='pre-line';
 }
 function backupFile(){

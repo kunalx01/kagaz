@@ -1,10 +1,10 @@
 /* Offline cache. Bump VERSION whenever any app file changes. */
-const VERSION = 'kagadpatre-v2';
+const VERSION = 'kagadpatre-v3';
 const FILES = ['./', './index.html', './html2pdf.bundle.min.js', './manifest.webmanifest',
   './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
