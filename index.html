@@ -244,6 +244,8 @@ sh.onclick=async()=>{
   el.querySelectorAll('.ui').forEach(x=>x.remove());
   el.querySelectorAll('.f').forEach(x=>{x.style.background='none';x.style.boxShadow='none'});
   el.querySelectorAll('span.f').forEach(x=>x.style.borderBottom='0');
+  /* Marathi fix: html2canvas splits text between every character when word-break/overflow-wrap is break-word, which breaks Devanagari shaping. Use normal wrapping only in the PDF copy. */
+  el.querySelectorAll('*').forEach(x=>{x.style.wordBreak='normal';x.style.overflowWrap='normal'});
   const d=new Date();
   const name=names[cur]+' '+d.getDate()+'-'+(d.getMonth()+1)+'-'+d.getFullYear()+'.pdf';
   const blob=await html2pdf().set({margin:25.4,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy'],avoid:'tr'}}).from(el).outputPdf('blob');
