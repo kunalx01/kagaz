@@ -1,5 +1,5 @@
 /* Offline cache. Bump VERSION whenever any app file changes. */
-const VERSION = 'kagadpatre-v3';
+const VERSION = 'kagadpatre-v4';
 const FILES = ['./', './index.html', './html2pdf.bundle.min.js', './manifest.webmanifest',
   './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
