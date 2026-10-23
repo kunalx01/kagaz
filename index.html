@@ -78,8 +78,10 @@ table.t{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:-1p
  tr.h1 td{border-color:#fff}
  tr.h2 td{border-color:#fff #fff #000 #fff}
  span.f{border-bottom:0}
+ .bxo{border-color:#fff!important}
 }
 .out .nb td{border-color:#fff}
+.out .bxo{border-color:#fff!important}
 .out tr.h1 td{border-color:#fff}
 .out tr.h2 td{border-color:#fff #fff #000 #fff}
 </style>
@@ -181,7 +183,20 @@ ${row('१५','केसडायरी','गुरनं. '+f(3)+' /२६ X �
 <h3 style="margin-top:12px">तपासाचा खुलासा:-</h3>
 <div class="f letter" ${E} style="min-height:120mm;font-size:12pt;line-height:1.7"></div>`;
 
-document.getElementById('c').innerHTML=`<div class="f letter" ${E}></div>`;
+const bx=(w,h,x='')=>`<div class="f bxo" ${E} style="box-sizing:border-box;border:1px solid #000;padding:3px 6px;width:${w}%;min-height:${h}mm;${x}"></div>`;
+const vr=l=>`<table class="t nb" style="width:89.4%;margin:0 0 4mm 10.6%"><colgroup><col style="width:12.7%"><col style="width:87.3%"></colgroup><tr><td style="font-weight:700;height:9mm;vertical-align:top">${l}</td><td class="f" ${E} style="vertical-align:top"></td></tr></table>`;
+document.getElementById('c').innerHTML=`<div style="font-size:12pt;line-height:1.6">
+<div style="text-align:right;font-weight:700">धरणगाव पोलिस स्टेशन</div>
+<div style="text-align:right;font-weight:700">दि. ${f()} / ${f()} / २०२६</div>
+<div style="font-weight:700;margin:8mm 0 1mm">प्रति,</div>
+${bx(41.2,17.7)}
+<div style="height:8mm"></div>
+${vr('विषय :')}${vr('रिपोर्ट :')}
+<div style="font-weight:700;margin:8mm 0 1mm">महोदय,</div>
+${bx(100,20.6)}
+<div style="text-align:right;font-weight:700;margin:8mm 0 1mm">मा. सविनय सादर</div>
+${bx(25.6,7.9,'margin-left:auto')}
+</div>`;
 
 const init={};['a','b','c'].forEach(i=>init[i]=document.getElementById(i).innerHTML);
 const names={a:'दोषारोप पत्र',b:'केस डायरी',c:'पत्र'};
@@ -254,7 +269,7 @@ function snap(){
  return o;
 }
 function apply(o){
- pages.forEach(id=>{const s=o.pages&&o.pages[id];if(!s)return;const p=$(id);p.innerHTML=init[id];
+ pages.forEach(id=>{const s=o.pages&&o.pages[id];if(!s)return;if(id==='c'&&s.f&&s.f.length===1)s.f=['','','','','',s.f[0],''];const p=$(id);p.innerHTML=init[id];
   p.querySelectorAll('table.ct tbody').forEach((tb,i)=>{const n=s.r&&s.r[i]||tb.rows.length;
    while(tb.rows.length<n){const r=tb.lastElementChild.cloneNode(true);r.querySelectorAll('.f').forEach(x=>x.textContent='');tb.appendChild(r)}});
   p.querySelectorAll('.f').forEach((x,i)=>{if(s.f&&typeof s.f[i]==='string')x.textContent=s.f[i]});
