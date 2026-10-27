@@ -18,7 +18,7 @@ body{margin:0;font-family:'Noto Sans Devanagari','Mukta','Mangal',sans-serif;bac
 .ui{font-family:inherit}
 :root{--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
 #top{position:fixed;top:0;left:0;right:0;height:calc(56px + var(--st));display:flex;gap:6px;padding:calc(6px + var(--st)) 6px 6px;background:#fff;border-bottom:1px solid #ccc;z-index:5}
-#top button{flex:1;font:700 16px inherit;font-family:inherit;border:2px solid #1a56c4;background:#fff;color:#1a56c4;border-radius:10px}
+#top button{flex:1;padding:0 2px;font:700 16px inherit;font-family:inherit;border:2px solid #1a56c4;background:#fff;color:#1a56c4;border-radius:10px}
 #top button.on{background:#1a56c4;color:#fff}
 #bot{position:fixed;bottom:0;left:0;right:0;height:calc(64px + var(--sb));display:flex;gap:6px;padding:6px 6px calc(6px + var(--sb));background:#fff;border-top:1px solid #ccc;z-index:5}
 #bot button{font:700 14px inherit;font-family:inherit;border:0;border-radius:10px;color:#fff;background:#444;padding:0 6px}
@@ -44,7 +44,7 @@ table.t{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:-1p
 .t td.n{text-align:center;width:9%}
 .ct tbody{counter-reset:r}
 .ct tbody tr{counter-increment:r}
-.ct td.n::before{content:counter(r)}
+.ct td.n::before{content:counter(r,devanagari)}
 .rc{display:flex;gap:10px;justify-content:flex-end;margin:6px 0 8px}
 .rc button{font:700 15px inherit;font-family:inherit;padding:8px 12px;border:2px solid #1a56c4;background:#fff;color:#1a56c4;border-radius:8px}
 .cb{display:inline-block;width:1.1em;height:1.1em;border:1.5px solid #000;vertical-align:-0.15em;margin:0 3px 0 10px;text-align:center;line-height:1em;font-size:1em;cursor:pointer}
@@ -91,11 +91,13 @@ table.t{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:-1p
  <button data-p="a" class="on">दोषारोप पत्र</button>
  <button data-p="b">केस डायरी</button>
  <button data-p="c">पत्र</button>
+ <button data-p="d">कोरे पत्र</button>
 </div>
 <div id="sc"><div id="wrap">
  <div class="page on" id="a"></div>
  <div class="page" id="b"></div>
  <div class="page" id="c"></div>
+ <div class="page" id="d"></div>
 </div></div>
 <div id="bot" class="ui">
  <button class="z" id="zo">−</button>
@@ -198,8 +200,10 @@ ${bx(100,20.6)}
 ${bx(25.6,7.9,'margin-left:auto')}
 </div>`;
 
-const init={};['a','b','c'].forEach(i=>init[i]=document.getElementById(i).innerHTML);
-const names={a:'दोषारोप पत्र',b:'केस डायरी',c:'पत्र'};
+document.getElementById('d').innerHTML=`<div class="f letter" ${E} style="min-height:240mm"></div>`;
+
+const init={};['a','b','c','d'].forEach(i=>init[i]=document.getElementById(i).innerHTML);
+const names={a:'दोषारोप पत्र',b:'केस डायरी',c:'पत्र',d:'कोरे पत्र'};
 let cur='a',z=1;
 const wrap=document.getElementById('wrap');
 const setZ=v=>{z=Math.max(.3,Math.min(2.2,v));wrap.style.zoom=z};
@@ -257,8 +261,19 @@ sh.onclick=async()=>{
  }catch(e){show('PDF बनवता आला नाही. ')}
 };
 
+/* ---------- English digits -> Marathi digits ---------- */
+const MD='०१२३४५६७८९',toMr=t=>t.replace(/[0-9]/g,d=>MD[d]);
+function fixDigits(box){
+ const w=document.createTreeWalker(box,NodeFilter.SHOW_TEXT),sel=getSelection();
+ let an=null,ao=0;if(sel.rangeCount&&box.contains(sel.anchorNode)){an=sel.anchorNode;ao=sel.anchorOffset}
+ let n,ch=false;
+ while(n=w.nextNode()){if(/[0-9]/.test(n.data)){n.data=toMr(n.data);ch=true}}
+ if(ch&&an&&an.nodeType===3){try{sel.collapse(an,Math.min(ao,an.data.length))}catch(e){}}
+}
+document.addEventListener('input',e=>{const b=e.target.closest&&e.target.closest('.f');if(b)fixDigits(b)},true);
+
 /* ---------- local storage (autosave), backup as text, install ---------- */
-const $=i=>document.getElementById(i),pages=['a','b','c'];
+const $=i=>document.getElementById(i),pages=['a','b','c','d'];
 const K='kagadpatre_v1',BK=K+'_bak',SN=K+'_snap_',LX=K+'_lastexport';
 let ok=true,lastSave=0,bakT=0,loaded=false,timer=null,inst=null;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -274,7 +289,7 @@ function apply(o){
  pages.forEach(id=>{const s=o.pages&&o.pages[id];if(!s)return;if(id==='c'&&s.f&&s.f.length===1)s.f=['','','','','',s.f[0],''];const p=$(id);p.innerHTML=init[id];
   p.querySelectorAll('table.ct tbody').forEach((tb,i)=>{const n=s.r&&s.r[i]||tb.rows.length;
    while(tb.rows.length<n){const r=tb.lastElementChild.cloneNode(true);r.querySelectorAll('.f').forEach(x=>x.textContent='');tb.appendChild(r)}});
-  p.querySelectorAll('.f').forEach((x,i)=>{if(s.f&&typeof s.f[i]==='string')x.textContent=s.f[i]});
+  p.querySelectorAll('.f').forEach((x,i)=>{if(s.f&&typeof s.f[i]==='string')x.textContent=toMr(s.f[i])});
   p.querySelectorAll('.cb').forEach((x,i)=>x.classList.toggle('on',!!(s.c&&s.c[i])));
  });
  if(o.cur&&names[o.cur])showTab(o.cur);
@@ -323,7 +338,7 @@ function dstat(){
  ds.textContent=(ok?'✔ माहिती आपोआप या फोनमध्ये जतन होते'+(t?' ('+t+')':''):'⚠ ब्राउझर स्टोरेज बंद आहे, माहिती जतन होत नाही!')
   +'\nशेवटचा बॅकअप: '+(lx?new Date(lx).toLocaleDateString('en-GB'):'अजून नाही')
   +'\nआठवड्यातून एकदा बॅकअप जतन करा.'
-  +'\nॲप आवृत्ती: v4';
+  +'\nॲप आवृत्ती: v5';
  ds.style.whiteSpace='pre-line';
 }
 function backupFile(){
