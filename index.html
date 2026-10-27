@@ -250,9 +250,33 @@ sh.onclick=async()=>{
   el.querySelectorAll('span.f').forEach(x=>x.style.borderBottom='0');
   /* Marathi fix: html2canvas splits text between every character when word-break/overflow-wrap is break-word, which breaks Devanagari shaping. Use normal wrapping only in the PDF copy. */
   el.querySelectorAll('*').forEach(x=>{x.style.wordBreak='normal';x.style.overflowWrap='normal'});
+  /* Page-break fix: split long free-text boxes into one block per printed line, so a page break can only fall between lines, never through a line. */
+  el.style.position='absolute';el.style.left='-9999px';el.style.top='0';document.body.appendChild(el);
+  try{
+   el.querySelectorAll('div.f').forEach(box=>{
+    if(box.closest('table'))return;
+    const txt=box.textContent;if(!txt.trim())return;
+    box.textContent=txt;const node=box.firstChild;if(!node)return;
+    const lines=[];let ps=0;
+    txt.split('\n').forEach(par=>{
+     const re=/\S+/g;let m,start=ps,top=null,end=ps,any=false;
+     while((m=re.exec(par))){
+      const a=ps+m.index,b=a+m[0].length,r=document.createRange();r.setStart(node,a);r.setEnd(node,b);
+      const rc=r.getClientRects(),t=rc.length?rc[0].top:top;
+      if(top!==null&&t-top>3){lines.push(txt.slice(start,end));start=a}
+      top=t;end=b;any=true;
+     }
+     lines.push(any?txt.slice(start,end):'');
+     ps+=par.length+1;
+    });
+    box.textContent='';
+    lines.forEach(l=>{const d=document.createElement('div');d.className='ln';d.style.whiteSpace='pre';d.textContent=l===''?'\u00a0':l;box.appendChild(d)});
+   });
+  }catch(e){}
+  el.remove();el.style.position='';el.style.left='';el.style.top='';
   const d=new Date();
   const name=names[cur]+' '+d.getDate()+'-'+(d.getMonth()+1)+'-'+d.getFullYear()+'.pdf';
-  const blob=await html2pdf().set({margin:25.4,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy'],avoid:'tr'}}).from(el).outputPdf('blob');
+  const blob=await html2pdf().set({margin:25.4,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4'},pagebreak:{mode:['css','legacy'],avoid:['tr','.ln']}}).from(el).outputPdf('blob');
   file=new File([blob],name,{type:'application/pdf'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){
    try{await navigator.share({files:[file]});msg.style.display='none'}
@@ -338,7 +362,7 @@ function dstat(){
  ds.textContent=(ok?'✔ माहिती आपोआप या फोनमध्ये जतन होते'+(t?' ('+t+')':''):'⚠ ब्राउझर स्टोरेज बंद आहे, माहिती जतन होत नाही!')
   +'\nशेवटचा बॅकअप: '+(lx?new Date(lx).toLocaleDateString('en-GB'):'अजून नाही')
   +'\nआठवड्यातून एकदा बॅकअप जतन करा.'
-  +'\nॲप आवृत्ती: v5';
+  +'\nॲप आवृत्ती: v6';
  ds.style.whiteSpace='pre-line';
 }
 function backupFile(){
